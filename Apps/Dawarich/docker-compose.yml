@@ -1,34 +1,34 @@
 name: dawarich
 services:
   dawarich_redis:
-    image: redis:7.0-alpine  # Specific version
+    image: redis:7.0-alpine
     network_mode: bridge
     volumes:
       - type: bind
-        source: /DATA/AppData/$AppID/redis  # CasaOS-specific path
-        target: /var/shared/redis
+        source: /DATA/AppData/$AppID/redis
+        target: /data
     restart: always
     x-casaos:
       ports: []
       volumes:
-        - container: /var/shared/redis
+        - container: /data
           description:
-            en_us: Redis shared data directory
+            en_us: Redis data directory
     container_name: dawarich_redis
 
   dawarich_db:
-    image: postgres:14.2-alpine  # Specific version
+    image: postgres:14.2-alpine
     network_mode: bridge
     volumes:
       - type: bind
-        source: /DATA/AppData/$AppID/db  # CasaOS-specific path
+        source: /DATA/AppData/$AppID/db
         target: /var/lib/postgresql/data
       - type: bind
         source: /DATA/AppData/$AppID/shared
         target: /var/shared
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     restart: always
     x-casaos:
       ports: []
@@ -39,16 +39,16 @@ services:
     container_name: dawarich_db
 
   dawarich_app:
-    image: freikin/dawarich:0.1.0  # Specific version
+    image: freikin/dawarich:0.13.0
     network_mode: bridge
     ports:
       - target: 3000
-        published: ${WEBUI_PORT}  # Use WEBUI_PORT magic variable
+        published: ${WEBUI_PORT}
         protocol: tcp
     volumes:
       - type: bind
-        source: /DATA/AppData/$AppID/gem_cache  # CasaOS-specific path
-        target: /usr/local/bundle/gems
+        source: /DATA/AppData/$AppID/gem_cache
+        target: /usr/local/bundle
       - type: bind
         source: /DATA/AppData/$AppID/public
         target: /var/app/public
@@ -61,19 +61,19 @@ services:
       REDIS_URL: redis://dawarich_redis:6379/0
       DATABASE_HOST: dawarich_db
       DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: password
+      DATABASE_PASSWORD: ${DB_PASSWORD}
       DATABASE_NAME: dawarich_development
-      APPLICATION_HOST: localhost
-      APPLICATION_PROTOCOL: http
-      TIME_ZONE: $TZ  # System-wide timezone variable
-    restart: on-failure
+      APPLICATION_HOST: ${APP_HOST}
+      APPLICATION_PROTOCOL: ${APP_PROTOCOL}
+      TIME_ZONE: $TZ
+    restart: unless-stopped
     x-casaos:
       ports:
         - container: "3000"
           description:
             en_us: Web UI port for dawarich app
       volumes:
-        - container: /usr/local/bundle/gems
+        - container: /usr/local/bundle
           description:
             en_us: Ruby gem cache
         - container: /var/app/public
@@ -82,12 +82,12 @@ services:
     container_name: dawarich_app
 
   dawarich_sidekiq:
-    image: freikin/dawarich:0.1.0  # Specific version
+    image: freikin/dawarich:0.1.0
     network_mode: bridge
     volumes:
       - type: bind
-        source: /DATA/AppData/$AppID/gem_cache  # CasaOS-specific path
-        target: /usr/local/bundle/gems
+        source: /DATA/AppData/$AppID/gem_cache
+        target: /usr/local/bundle
       - type: bind
         source: /DATA/AppData/$AppID/public
         target: /var/app/public
@@ -100,15 +100,15 @@ services:
       REDIS_URL: redis://dawarich_redis:6379/0
       DATABASE_HOST: dawarich_db
       DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: password
+      DATABASE_PASSWORD: ${DB_PASSWORD}
       DATABASE_NAME: dawarich_development
-      APPLICATION_HOST: localhost
-      APPLICATION_PROTOCOL: http
-    restart: on-failure
+      APPLICATION_HOST: ${APP_HOST}
+      APPLICATION_PROTOCOL: ${APP_PROTOCOL}
+    restart: unless-stopped
     x-casaos:
       ports: []
       volumes:
-        - container: /usr/local/bundle/gems
+        - container: /usr/local/bundle
           description:
             en_us: Ruby gem cache
         - container: /var/app/public
@@ -116,17 +116,10 @@ services:
             en_us: Public folder
     container_name: dawarich_sidekiq
 
-volumes:
-  db_data:
-  gem_cache:
-  shared_data:
-  public:
-
 x-casaos:
   architectures:
     - amd64
     - arm64
-    - arm
   main: dawarich_app
   author: Freika
   category: Development

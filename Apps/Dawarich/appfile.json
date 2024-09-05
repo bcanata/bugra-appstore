@@ -56,7 +56,8 @@
 		},
 		{
 		  "name": "DATABASE_PASSWORD",
-		  "value": "password"
+		  "key": "DB_PASSWORD",
+		  "value": ""
 		},
 		{
 		  "name": "DATABASE_NAME",
@@ -64,11 +65,13 @@
 		},
 		{
 		  "name": "APPLICATION_HOST",
-		  "value": "localhost"
+		  "key": "APP_HOST",
+		  "value": ""
 		},
 		{
 		  "name": "APPLICATION_PROTOCOL",
-		  "value": "http"
+		  "key": "APP_PROTOCOL",
+		  "value": ""
 		},
 		{
 		  "name": "TIME_ZONE",
@@ -87,7 +90,7 @@
 	  ],
 	  "volumes": [
 		{
-		  "container": "/usr/local/bundle/gems",
+		  "container": "/usr/local/bundle",
 		  "host": "/DATA/AppData/$AppID/gem_cache",
 		  "mode": "rw",
 		  "allocation": "automatic",
@@ -103,12 +106,12 @@
 		  "description": "Public folder for Dawarich app"
 		},
 		{
-		  "container": "/var/shared/redis",
+		  "container": "/data",
 		  "host": "/DATA/AppData/$AppID/redis",
 		  "mode": "rw",
 		  "allocation": "automatic",
 		  "configurable": "no",
-		  "description": "Redis shared data directory"
+		  "description": "Redis data directory"
 		},
 		{
 		  "container": "/var/lib/postgresql/data",
@@ -124,7 +127,7 @@
 		"min_memory": 256,
 		"min_storage": 512
 	  },
-	  "restart_policy": "on-failure",
+	  "restart_policy": "unless-stopped",
 	  "sysctls": [],
 	  "cap_add": [],
 	  "labels": [],
