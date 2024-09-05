@@ -1,0 +1,144 @@
+name: dawarich
+services:
+  dawarich_redis:
+    image: redis:7.0-alpine  # Specific version
+    network_mode: bridge
+    volumes:
+      - type: bind
+        source: /DATA/AppData/$AppID/redis  # CasaOS-specific path
+        target: /var/shared/redis
+    restart: always
+    x-casaos:
+      ports: []
+      volumes:
+        - container: /var/shared/redis
+          description:
+            en_us: Redis shared data directory
+    container_name: dawarich_redis
+
+  dawarich_db:
+    image: postgres:14.2-alpine  # Specific version
+    network_mode: bridge
+    volumes:
+      - type: bind
+        source: /DATA/AppData/$AppID/db  # CasaOS-specific path
+        target: /var/lib/postgresql/data
+      - type: bind
+        source: /DATA/AppData/$AppID/shared
+        target: /var/shared
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    restart: always
+    x-casaos:
+      ports: []
+      volumes:
+        - container: /var/lib/postgresql/data
+          description:
+            en_us: Postgres data directory
+    container_name: dawarich_db
+
+  dawarich_app:
+    image: freikin/dawarich:0.1.0  # Specific version
+    network_mode: bridge
+    ports:
+      - target: 3000
+        published: ${WEBUI_PORT}  # Use WEBUI_PORT magic variable
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: /DATA/AppData/$AppID/gem_cache  # CasaOS-specific path
+        target: /usr/local/bundle/gems
+      - type: bind
+        source: /DATA/AppData/$AppID/public
+        target: /var/app/public
+    stdin_open: true
+    tty: true
+    entrypoint: dev-entrypoint.sh
+    command: ['bin/dev']
+    environment:
+      RAILS_ENV: development
+      REDIS_URL: redis://dawarich_redis:6379/0
+      DATABASE_HOST: dawarich_db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: password
+      DATABASE_NAME: dawarich_development
+      APPLICATION_HOST: localhost
+      APPLICATION_PROTOCOL: http
+      TIME_ZONE: $TZ  # System-wide timezone variable
+    restart: on-failure
+    x-casaos:
+      ports:
+        - container: "3000"
+          description:
+            en_us: Web UI port for dawarich app
+      volumes:
+        - container: /usr/local/bundle/gems
+          description:
+            en_us: Ruby gem cache
+        - container: /var/app/public
+          description:
+            en_us: Public folder
+    container_name: dawarich_app
+
+  dawarich_sidekiq:
+    image: freikin/dawarich:0.1.0  # Specific version
+    network_mode: bridge
+    volumes:
+      - type: bind
+        source: /DATA/AppData/$AppID/gem_cache  # CasaOS-specific path
+        target: /usr/local/bundle/gems
+      - type: bind
+        source: /DATA/AppData/$AppID/public
+        target: /var/app/public
+    stdin_open: true
+    tty: true
+    entrypoint: dev-entrypoint.sh
+    command: ['sidekiq']
+    environment:
+      RAILS_ENV: development
+      REDIS_URL: redis://dawarich_redis:6379/0
+      DATABASE_HOST: dawarich_db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: password
+      DATABASE_NAME: dawarich_development
+      APPLICATION_HOST: localhost
+      APPLICATION_PROTOCOL: http
+    restart: on-failure
+    x-casaos:
+      ports: []
+      volumes:
+        - container: /usr/local/bundle/gems
+          description:
+            en_us: Ruby gem cache
+        - container: /var/app/public
+          description:
+            en_us: Public folder
+    container_name: dawarich_sidekiq
+
+volumes:
+  db_data:
+  gem_cache:
+  shared_data:
+  public:
+
+x-casaos:
+  architectures:
+    - amd64
+    - arm64
+    - arm
+  main: dawarich_app
+  author: Freika
+  category: Development
+  description:
+    en_us: Dawarich is a Ruby on Rails-based application with Redis and PostgreSQL integration for managing and processing tasks with Sidekiq.
+  developer: Freikin
+  icon: https://your-icon-url.com/icon.png
+  screenshot_link:
+    - https://your-screenshot-url.com/screenshot-1.png
+    - https://your-screenshot-url.com/screenshot-2.png
+  tagline:
+    en_us: A Rails-based task management app using Sidekiq.
+  thumbnail: https://your-thumbnail-url.com/thumbnail.png
+  index: /
+  port_map: "3000"

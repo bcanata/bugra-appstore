@@ -1,0 +1,149 @@
+{
+	"version": "2.0",
+	"title": "Dawarich",
+	"name": "dawarich",
+	"icon": "https://your-icon-url.com/icon.png",
+	"tagline": "A Rails-based task management app using Sidekiq.",
+	"overview": "Dawarich is a Ruby on Rails-based application with Redis and PostgreSQL integration for managing and processing tasks with Sidekiq.",
+	"thumbnail": "https://your-thumbnail-url.com/thumbnail.png",
+	"screenshots": [
+	  "https://your-screenshot-url.com/screenshot-1.png",
+	  "https://your-screenshot-url.com/screenshot-2.png"
+	],
+	"category": [
+	  "Development"
+	],
+	"developer": {
+	  "name": "Freikin",
+	  "website": "",
+	  "donate_text": "",
+	  "donate_link": ""
+	},
+	"adaptor": {
+	  "name": "Freika",
+	  "website": "",
+	  "donate_text": "",
+	  "donate_link": ""
+	},
+	"support": "",
+	"website": "",
+	"container": {
+	  "image": "freikin/dawarich:0.1.0",
+	  "shell": "sh",
+	  "privileged": false,
+	  "network_model": "bridge",
+	  "web_ui": {
+		"http": "3000",
+		"path": "/"
+	  },
+	  "health_check": "",
+	  "envs": [
+		{
+		  "name": "RAILS_ENV",
+		  "value": "development"
+		},
+		{
+		  "name": "REDIS_URL",
+		  "value": "redis://dawarich_redis:6379/0"
+		},
+		{
+		  "name": "DATABASE_HOST",
+		  "value": "dawarich_db"
+		},
+		{
+		  "name": "DATABASE_USERNAME",
+		  "value": "postgres"
+		},
+		{
+		  "name": "DATABASE_PASSWORD",
+		  "value": "password"
+		},
+		{
+		  "name": "DATABASE_NAME",
+		  "value": "dawarich_development"
+		},
+		{
+		  "name": "APPLICATION_HOST",
+		  "value": "localhost"
+		},
+		{
+		  "name": "APPLICATION_PROTOCOL",
+		  "value": "http"
+		},
+		{
+		  "name": "TIME_ZONE",
+		  "value": "$TZ"
+		}
+	  ],
+	  "ports": [
+		{
+		  "container": "3000",
+		  "host": "${WEBUI_PORT}",
+		  "type": "tcp",
+		  "allocation": "automatic",
+		  "configurable": "no",
+		  "description": "Web UI port for Dawarich app"
+		}
+	  ],
+	  "volumes": [
+		{
+		  "container": "/usr/local/bundle/gems",
+		  "host": "/DATA/AppData/$AppID/gem_cache",
+		  "mode": "rw",
+		  "allocation": "automatic",
+		  "configurable": "no",
+		  "description": "Ruby gem cache"
+		},
+		{
+		  "container": "/var/app/public",
+		  "host": "/DATA/AppData/$AppID/public",
+		  "mode": "rw",
+		  "allocation": "automatic",
+		  "configurable": "no",
+		  "description": "Public folder for Dawarich app"
+		},
+		{
+		  "container": "/var/shared/redis",
+		  "host": "/DATA/AppData/$AppID/redis",
+		  "mode": "rw",
+		  "allocation": "automatic",
+		  "configurable": "no",
+		  "description": "Redis shared data directory"
+		},
+		{
+		  "container": "/var/lib/postgresql/data",
+		  "host": "/DATA/AppData/$AppID/db",
+		  "mode": "rw",
+		  "allocation": "automatic",
+		  "configurable": "no",
+		  "description": "Postgres data directory"
+		}
+	  ],
+	  "devices": [],
+	  "constraints": {
+		"min_memory": 256,
+		"min_storage": 512
+	  },
+	  "restart_policy": "on-failure",
+	  "sysctls": [],
+	  "cap_add": [],
+	  "labels": [],
+	  "host_name": "",
+	  "cmd": []
+	},
+	"abilities": {
+	  "notification": false,
+	  "widgets": false,
+	  "authentication": false,
+	  "search": false,
+	  "upnp": false
+	},
+	"tips": {
+	  "before_install": []
+	},
+	"changelog": {
+	  "latest_updates": "",
+	  "url": ""
+	},
+	"latest_update_date": ""
+  }
